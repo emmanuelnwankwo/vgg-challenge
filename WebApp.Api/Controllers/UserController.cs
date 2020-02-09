@@ -30,22 +30,16 @@ namespace WebApp.Api.Controllers
                 if (ModelState.IsValid)
                 {
                     UserResponseData responseData = userRepository.CreateUser(userRequest);
-                    if (responseData == null)
+                    if (responseData != null)
                     {
-                        errorResponse = new ErrorResponse
+                        userResponse = new UserResponse
                         {
-                            Status = 400,
-                            Message = ModelState.ValidationState.ToString()
+                            Status = 201,
+                            Message = "Created Successfully",
+                            ResponseData = responseData
                         };
-                        return BadRequest(errorResponse);
+                        return Created("", userResponse);
                     }
-                    userResponse = new UserResponse
-                    {
-                        Status = 201,
-                        Message = "Created Successfully",
-                        ResponseData = responseData
-                    };
-                    return Created("", userResponse);
                 }
                 errorResponse = new ErrorResponse
                 {
@@ -123,5 +117,57 @@ namespace WebApp.Api.Controllers
                 return StatusCode(errorResponse.Status, errorResponse);
             }
         }
+
+
+        [HttpPost]
+        [Route("auth")]
+        public ActionResult<UserResponse> Auth([FromBody] UserRequest userRequest)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    UserResponseData responseData = userRepository.Auth(userRequest);
+                    if (responseData != null)
+                    {
+                        userResponse = new UserResponse
+                        {
+                            Status = 200,
+                            Message = "Success",
+                            ResponseData = responseData
+                        };
+                        return Ok(userResponse);
+                    }
+                }
+                errorResponse = new ErrorResponse
+                {
+                    Status = 400,
+                    Message = ModelState.ValidationState.ToString()
+                };
+                return BadRequest(errorResponse);
+            }
+            catch (Exception ex)
+            {
+                string error = (ex.InnerException != null) ? ex.InnerException.Message : ex.Message;
+                if (error.Contains("Cannot insert duplicate key row in object"))
+                {
+                    errorResponse = new ErrorResponse
+                    {
+                        Status = 409,
+                        Message = "Username exits"
+                    };
+                }
+                else
+                {
+                    errorResponse = new ErrorResponse
+                    {
+                        Status = 500,
+                        Message = error
+                    };
+                }
+                return StatusCode(errorResponse.Status, errorResponse);
+            }
+        }
+
     }
 }

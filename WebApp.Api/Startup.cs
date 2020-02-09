@@ -16,6 +16,8 @@ using WebApp.Core.BusinessLayer.Interface;
 using WebApp.Core.BusinessLayer.Repository;
 using WebApp.Core.EntityClass;
 using WebApp.Data;
+using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.OpenApi.Models;
 
 namespace WebApp.Api
 {
@@ -43,6 +45,7 @@ namespace WebApp.Api
             services.AddScoped<UserEntity>();
             services.AddScoped<ProjectEntity>();
             services.AddScoped<ActionEntity>();
+            services.AddScoped<AuthEntity>();
             services.AddSwaggerGen(setupAction =>
             {
                 setupAction.SwaggerDoc("WebApi",
@@ -51,6 +54,37 @@ namespace WebApp.Api
                         Title = "Web Api",
                         Version = "v1"
                     });
+                setupAction.AddSecurityDefinition("Bearer",
+                new OpenApiSecurityScheme
+                {
+                    Description = "Please enter into field the word 'Bearer' following by space and Token",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+                setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                  {
+                    {
+                      new OpenApiSecurityScheme
+                      {
+                        Reference = new OpenApiReference
+                          {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                          },
+                          Scheme = "oauth2",
+                          Name = "Bearer",
+                          In = ParameterLocation.Header,
+
+                        },
+                        new List<string>()
+                      }
+                    });
+                //setupAction.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
+                //    { "Bearer", Enumerable.Empty<string>() }
+                //});
+                //setupAction.AddSecurityDefinition("Basic", new BasicAuthScheme { Description = "Basic authentication" });
             });
         }
 

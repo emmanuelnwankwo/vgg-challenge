@@ -30,5 +30,6 @@ namespace WebApp.Data
         public DbSet<Project> Projects { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Action> Actions { get; set; }
+        public DbSet<SessionRecord> SessionRecords { get; set; }
     }
 }

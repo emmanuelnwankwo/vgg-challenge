@@ -40,5 +40,29 @@ namespace WebApp.Core.EntityClass
             var user = DbContext.Users.Single(x => x.Id == id);
             return user;
         }
+
+        internal User FindUser(UserRequest userRequest)
+        {
+            var user = DbContext.Users.Single(x => x.Username == userRequest.Username && x.Password == userRequest.Password);
+            return user;
+        }
+
+        internal void PersistToken(Guid token, string username)
+        {
+            try
+            {
+                SessionRecord session = new SessionRecord
+                {
+                    Username = username,
+                    Token = token
+                };
+                DbContext.SessionRecords.Add(session);
+                DbContext.SaveChanges();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 }

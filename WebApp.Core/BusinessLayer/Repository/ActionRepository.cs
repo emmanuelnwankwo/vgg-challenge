@@ -10,10 +10,12 @@ namespace WebApp.Core.BusinessLayer.Interface
     public class ActionRepository : IActionRepository
     {
         private ActionEntity actionEntity;
+        private AuthEntity authEntity;
         private ActionResponseData responseData;
-        public ActionRepository(ActionEntity _actionEntity)
+        public ActionRepository(ActionEntity _actionEntity, AuthEntity _authEntity)
         {
             actionEntity = _actionEntity;
+            authEntity = _authEntity;
         }
         public ActionResponseData CreateAction(int id, ActionRequest actionRequest)
         {
@@ -174,6 +176,23 @@ namespace WebApp.Core.BusinessLayer.Interface
             catch (Exception)
             {
                 throw;
+            }
+        }
+
+        public bool AccessAuthentication(string token)
+        {
+            try
+            {
+                bool isValid = authEntity.AccessAuthentication(token);
+                if (isValid)
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
     }
