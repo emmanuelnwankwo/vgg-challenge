@@ -10,6 +10,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using WebApp.Core.BusinessLayer.Interface;
+using WebApp.Core.BusinessLayer.Repository;
+using WebApp.Core.EntityClass;
+using WebApp.Data;
 
 namespace WebApp.Api
 {
@@ -26,6 +32,22 @@ namespace WebApp.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddDbContext<ApiDbContext>(options =>
+            {
+                options.UseSqlServer(Configuration.GetConnectionString("WebApiDB"));
+            });
+            services.AddScoped<IProjectRepository, ProjectRepository>();
+
+            services.AddScoped<ProjectEntity>();
+            services.AddSwaggerGen(setupAction =>
+            {
+                setupAction.SwaggerDoc("WebApi",
+                    new Microsoft.OpenApi.Models.OpenApiInfo()
+                    {
+                        Title = "Web Api",
+                        Version = "v1"
+                    });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -37,6 +59,17 @@ namespace WebApp.Api
             }
 
             app.UseHttpsRedirection();
+            app.UseSwagger(c =>
+            {
+                //Change the path of the end point , should also update UI middle ware for this change                
+                c.RouteTemplate = "{documentName}/swagger.json";
+            });
+
+            app.UseSwaggerUI(c =>
+            {
+                c.RoutePrefix = "";
+                c.SwaggerEndpoint("/WebApi/swagger.json", "");
+            });
 
             app.UseRouting();
 

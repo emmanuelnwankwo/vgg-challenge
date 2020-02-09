@@ -5,11 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="BusinessLayer\Interface\" />
-    <Folder Include="BusinessLayer\Repository\" />
-    <Folder Include="Dtos\" />
     <Folder Include="EntityClass\" />
-    <Folder Include="Utility\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WebApp.Data\WebApp.Data.csproj" />
   </ItemGroup>
 
 </Project>
