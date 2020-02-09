@@ -3,6 +3,8 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.0 AS build
 WORKDIR /src
 COPY *.sln .
 COPY WebApp.Api/*.csproj WebApp.Api/
+COPY WebApp.Core/*.csproj WebApp.Core/
+COPY WebApp.Data/*.csproj WebApp.Data/
 RUN dotnet restore
 COPY . .
 
