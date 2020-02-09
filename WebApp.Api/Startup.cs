@@ -36,8 +36,10 @@ namespace WebApp.Api
             {
                 options.UseSqlServer(Configuration.GetConnectionString("WebApiDB"));
             });
+            services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
 
+            services.AddScoped<UserEntity>();
             services.AddScoped<ProjectEntity>();
             services.AddSwaggerGen(setupAction =>
             {

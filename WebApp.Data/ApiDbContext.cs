@@ -17,8 +17,12 @@ namespace WebApp.Data
             modelBuilder.Entity<Project>()
                 .HasIndex(b => b.Name)
                 .IsUnique();
+            modelBuilder.Entity<User>()
+                .HasIndex(b => b.Username)
+                .IsUnique();
         }
 
         public DbSet<Project> Projects { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }

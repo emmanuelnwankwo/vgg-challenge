@@ -11,7 +11,6 @@ namespace WebApp.Core.BusinessLayer.Repository
     {
         private ProjectEntity projectEntity;
         private ProjectResponseData projectResponse;
-        private ErrorResponse errorResponse;
         public ProjectRepository(ProjectEntity _projectEntity)
         {
             projectEntity = _projectEntity;
