@@ -23,7 +23,8 @@ namespace WebApp.Core.EntityClass
                 User newUser = new User
                 {
                     Username = userRequest.Username,
-                    Password = hashedPassword
+                    Password = hashedPassword,
+                    CreatedAt = DateTime.Now
                 };
                 DbContext.Users.Add(newUser);
                 DbContext.SaveChanges();

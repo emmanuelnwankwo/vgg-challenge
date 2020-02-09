@@ -9,89 +9,34 @@ using WebApp.Core.Dtos;
 
 namespace WebApp.Api.Controllers
 {
-    [Route("api/users")]
+    [Route("api/action")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class ActionController : ControllerBase
     {
-        private IUserRepository userRepository;
+        private IActionRepository actionRepository;
         private ErrorResponse errorResponse;
-        private UserResponse userResponse;
-        public UserController(IUserRepository _userRepository)
+        private ActionResponse actionResponse;
+        private ActionsResponse actionsResponse;
+        public ActionController(IActionRepository _actionRepository)
         {
-            userRepository = _userRepository;
+            actionRepository = _actionRepository;
         }
 
-        [HttpPost]
-        [Route("register")]
-        public ActionResult<UserResponse> Register([FromBody] UserRequest userRequest)
+        [HttpGet("{actionId}", Name = "GetOne")]
+        public ActionResult<ProjectResponse> GetOne(int actionId)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    UserResponseData responseData = userRepository.CreateUser(userRequest);
-                    if (responseData == null)
-                    {
-                        errorResponse = new ErrorResponse
-                        {
-                            Status = 400,
-                            Message = ModelState.ValidationState.ToString()
-                        };
-                        return BadRequest(errorResponse);
-                    }
-                    userResponse = new UserResponse
-                    {
-                        Status = 201,
-                        Message = "Created Successfully",
-                        ResponseData = responseData
-                    };
-                    return Created("", userResponse);
-                }
-                errorResponse = new ErrorResponse
-                {
-                    Status = 400,
-                    Message = ModelState.ValidationState.ToString()
-                };
-                return BadRequest(errorResponse);
-            }
-            catch (Exception ex)
-            {
-                string error = (ex.InnerException != null) ? ex.InnerException.Message : ex.Message;
-                if (error.Contains("Cannot insert duplicate key row in object"))
-                {
-                    errorResponse = new ErrorResponse
-                    {
-                        Status = 409,
-                        Message = "Username exits"
-                    };
-                }
-                else
-                {
-                    errorResponse = new ErrorResponse
-                    {
-                        Status = 500,
-                        Message = error
-                    };
-                }
-                return StatusCode(errorResponse.Status, errorResponse);
-            }
-        }
-
-        [HttpGet("{userId}", Name = "GetOneUser")]
-        public ActionResult<ProjectResponse> GetOneUser(int userId)
-        {
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    UserResponseData responseData = userRepository.GetOneUser(userId);
-                    userResponse = new UserResponse
+                    ActionResponseData responseData = actionRepository.GetOneAction(actionId);
+                    actionResponse = new ActionResponse
                     {
                         Status = 200,
                         Message = "Success",
                         ResponseData = responseData
                     };
-                    return Ok(userResponse);
+                    return Ok(actionResponse);
                 }
                 errorResponse = new ErrorResponse
                 {
@@ -109,7 +54,7 @@ namespace WebApp.Api.Controllers
                     errorResponse = new ErrorResponse
                     {
                         Status = 404,
-                        Message = "User not found"
+                        Message = "Action not found"
                     };
                 }
                 else
@@ -123,5 +68,45 @@ namespace WebApp.Api.Controllers
                 return StatusCode(errorResponse.Status, errorResponse);
             }
         }
+
+
+        [HttpGet]
+        public ActionResult<ActionsResponse> Get()
+        {
+            try
+            {
+                List<ActionResponseData> responseData = actionRepository.GetAllActions();
+                actionsResponse = new ActionsResponse
+                {
+                    Status = 200,
+                    Message = "Success",
+                    ResponseData = responseData
+                };
+                return Ok(actionsResponse);
+            }
+            catch (Exception ex)
+            {
+
+                string error = (ex.InnerException != null) ? ex.InnerException.Message : ex.Message;
+                if (error.Contains("Sequence contains no elements"))
+                {
+                    errorResponse = new ErrorResponse
+                    {
+                        Status = 404,
+                        Message = "Action not found"
+                    };
+                }
+                else
+                {
+                    errorResponse = new ErrorResponse
+                    {
+                        Status = 500,
+                        Message = error
+                    };
+                }
+                return StatusCode(errorResponse.Status, errorResponse);
+            }
+        }
+
     }
 }
