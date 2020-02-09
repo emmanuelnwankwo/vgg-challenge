@@ -77,14 +77,14 @@ namespace WebApp.Api.Controllers
             }
         }
 
-        [HttpGet("{id}", Name = "GetOne")]
-        public ActionResult<ProjectResponse> GetOne(int id)
+        [HttpGet("{userId}", Name = "GetOneUser")]
+        public ActionResult<ProjectResponse> GetOneUser(int userId)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    UserResponseData responseData = userRepository.GetOneUser(id);
+                    UserResponseData responseData = userRepository.GetOneUser(userId);
                     userResponse = new UserResponse
                     {
                         Status = 200,

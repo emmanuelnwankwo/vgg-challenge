@@ -12,9 +12,11 @@ namespace WebApp.Core.EntityClass
     public class ActionEntity
     {
         private readonly ApiDbContext DbContext;
-        public ActionEntity(ApiDbContext dbContext)
+        private ProjectEntity projectEntity;
+        public ActionEntity(ApiDbContext dbContext, ProjectEntity _projectEntity)
         {
             DbContext = dbContext;
+            projectEntity = _projectEntity;
         }
         internal int Create(int id, ActionRequest actionRequest)
         {
@@ -64,18 +66,118 @@ namespace WebApp.Core.EntityClass
             var action = DbContext.Actions.Single(x => x.Id == id);
             action.Note = actionRequest.Note;
             action.Description = actionRequest.Description;
-            action.Project_Id = actionRequest.Project_Id;
+            action.Project_Id = id;
             action.UpdatedAt = DateTime.Now;
             DbContext.Update(action);
             DbContext.SaveChanges();
             return action;
         }
-        internal int DeleteOne(int id)
+        internal int DeleteOne(int projectId, int actionId)
         {
-            var action = DbContext.Actions.Single(x => x.Id == id);
-            DbContext.Remove(action);
-            int response = DbContext.SaveChanges();
-            return response;
+            try
+            {
+                Action action = new Action();
+                Project value = new Project();
+                try
+                {
+                    value = projectEntity.GetOne(projectId);
+                }
+                catch (Exception)
+                {
+                    throw new Exception("Project not found"); ;
+                }
+                if (value != null)
+                {
+                    action = DbContext.Actions.Where(x => x.Project_Id == projectId).Single(x => x.Id == actionId);
+                    DbContext.Remove(action);
+                    int response = DbContext.SaveChanges();
+                    return response; 
+                }
+                return 0;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        internal List<Action> GetActionsInProject(int projectId)
+        {
+            try
+            {
+                List<Action> actionList = new List<Action>();
+                var value = projectEntity.GetOne(projectId);
+                if (value != null)
+                {
+                    actionList = DbContext.Actions.Where(x => x.Project_Id == projectId).ToList();
+                    return actionList;
+                }
+                return actionList = null;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        internal Action GetActionInProject(int projectId, int actionId)
+        {
+            try
+            {
+                Action action = new Action();
+                Project value = new Project();
+                try
+                {
+                    value = projectEntity.GetOne(projectId);
+                }
+                catch (Exception)
+                {
+                    throw new Exception("Project not found"); ;
+                }
+                if (value != null)
+                {
+                    action = DbContext.Actions.Where(x => x.Project_Id == projectId).Single(x => x.Id == actionId);
+                    return action;
+                }
+                return action = null;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        internal Action ProjectPutUpdate(int projectId, int actionId, ActionRequest actionRequest)
+        {
+            try
+            {
+                Action action = new Action();
+                Project value = new Project();
+                try
+                {
+                    value = projectEntity.GetOne(projectId);
+                }
+                catch (Exception)
+                {
+                    throw new Exception("Project not found"); ;
+                }
+                if (value != null)
+                {
+                    action = DbContext.Actions.Where(x => x.Project_Id == projectId).Single(x => x.Id == actionId);
+                    action.Note = actionRequest.Note;
+                    action.Description = actionRequest.Description;
+                    action.Project_Id = projectId;
+                    action.UpdatedAt = DateTime.Now;
+                    DbContext.Update(action);
+                    DbContext.SaveChanges();
+                    return action; 
+                }
+                return action = null;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

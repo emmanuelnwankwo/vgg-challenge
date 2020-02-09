@@ -89,11 +89,11 @@ namespace WebApp.Core.BusinessLayer.Interface
             }
         }
 
-        public bool DeleteAction(int id)
+        public bool DeleteAction(int projectId, int actionId)
         {
             try
             {
-                int data = actionEntity.DeleteOne(id);
+                int data = actionEntity.DeleteOne(projectId, actionId);
                 if (data != 0)
                 {
                     return true;
@@ -106,11 +106,60 @@ namespace WebApp.Core.BusinessLayer.Interface
             }
         }
 
-        public ActionResponseData UpdateAll(int id, ActionRequest actionRequest)
+        public List<ActionResponseData> GetAllActionsInProject(int id)
         {
             try
             {
-                var data = actionEntity.PutUpdate(id, actionRequest);
+                var response = actionEntity.GetActionsInProject(id);
+                List<ActionResponseData> list = new List<ActionResponseData>();
+                foreach (var data in response)
+                {
+                    responseData = new ActionResponseData
+                    {
+                        Id = data.Id,
+                        Project_Id = data.Project_Id,
+                        Note = data.Note,
+                        Description = data.Description,
+                        CreatedAt = data.CreatedAt,
+                        UpdatedAt = data.UpdatedAt
+                    };
+                    list.Add(responseData);
+                }
+                return list;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public ActionResponseData GetActionInProject(int projectId, int actionId)
+        {
+            try
+            {
+                var data = actionEntity.GetActionInProject(projectId, actionId);
+                responseData = new ActionResponseData
+                {
+                    Id = data.Id,
+                    Project_Id = data.Project_Id,
+                    Note = data.Note,
+                    Description = data.Description,
+                    CreatedAt = data.CreatedAt,
+                    UpdatedAt = data.UpdatedAt
+                };
+                return responseData;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public ActionResponseData GetActionInProject(int projectId, int actionId, ActionRequest actionRequest)
+        {
+            try
+            {
+                var data = actionEntity.ProjectPutUpdate(projectId, actionId, actionRequest);
                 responseData = new ActionResponseData
                 {
                     Id = data.Id,

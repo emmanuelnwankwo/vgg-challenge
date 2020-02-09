@@ -17,20 +17,19 @@ namespace WebApp.Api.Controllers
         private ErrorResponse errorResponse;
         private ActionResponse actionResponse;
         private ActionsResponse actionsResponse;
-        private ProjectsResponse projectsResponse;
         public ActionController(IActionRepository _actionRepository)
         {
             actionRepository = _actionRepository;
         }
 
-        [HttpGet("{id}", Name = "GetOne")]
-        public ActionResult<ProjectResponse> GetOne(int id)
+        [HttpGet("{actionId}", Name = "GetOne")]
+        public ActionResult<ProjectResponse> GetOne(int actionId)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    ActionResponseData responseData = actionRepository.GetOneAction(id);
+                    ActionResponseData responseData = actionRepository.GetOneAction(actionId);
                     actionResponse = new ActionResponse
                     {
                         Status = 200,
