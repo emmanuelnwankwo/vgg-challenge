@@ -18,16 +18,16 @@ namespace WebApp.Core.EntityClass
         {
             try
             {
-                //Project newProject = new Project
-                //{
-                //    Name = projestRequest.Name,
-                //    Description = projestRequest.Description,
-                //    Completed = projestRequest.Completed,
-                //    CreatedAt = DateTime.Now
-                //};
-                //DbContext.Projects.Add(newProject);
+                Project newProject = new Project
+                {
+                    Name = projestRequest.Name,
+                    Description = projestRequest.Description,
+                    Completed = projestRequest.Completed,
+                    CreatedAt = DateTime.Now
+                };
+                DbContext.Projects.Add(newProject);
                 DbContext.SaveChanges();
-                return 0;
+                return newProject.Id;
             }
             catch (Exception)
             {
@@ -35,60 +35,45 @@ namespace WebApp.Core.EntityClass
             }
         }
 
-        //internal List<Project> GetAll()
-        //{
-        //    var projectList = DbContext.Projects.ToList();
-        //    return projectList;
-        //}
+        internal List<Project> GetAll()
+        {
+            var projectList = DbContext.Projects.ToList();
+            return projectList;
+        }
 
-        //internal Project GetOne(int id)
-        //{
-        //    //var project = DbContext.Projects.Single(x => x.Id == id);
-        //    return project;
-        //}
+        internal Project GetOne(int id)
+        {
+            var project = DbContext.Projects.Single(x => x.Id == id);
+            return project;
+        }
 
-        //internal Project PatchUpdate(int id, ProjestPatchRequest projestPatchRequest)
-        //{
-        //    //var project = DbContext.Projects.Single(x => x.Id == id);
-        //    //project.Completed = projestPatchRequest.Completed;
-        //    //project.UpdatedAt = DateTime.Now;
-        //    //DbContext.Update(project);
-        //    DbContext.SaveChanges();
-        //    return project;
-        //}
+        internal Project PatchUpdate(int id, ProjestPatchRequest projestPatchRequest)
+        {
+            var project = DbContext.Projects.Single(x => x.Id == id);
+            project.Completed = projestPatchRequest.Completed;
+            project.UpdatedAt = DateTime.Now;
+            DbContext.Update(project);
+            DbContext.SaveChanges();
+            return project;
+        }
 
-        //internal Project PutUpdate(int id, ProjestRequest projestRequest)
-        //{
-        //    //var project = DbContext.Projects.Single(x => x.Id == id);
-        //    //project.Completed = projestRequest.Completed;
-        //    //project.Name = projestRequest.Name;
-        //    //project.Description = projestRequest.Description;
-        //    //project.UpdatedAt = DateTime.Now;
-        //    //DbContext.Update(project);
-        //    DbContext.SaveChanges();
-        //    return project;
-        //}
+        internal Project PutUpdate(int id, ProjestRequest projestRequest)
+        {
+            var project = DbContext.Projects.Single(x => x.Id == id);
+            project.Completed = projestRequest.Completed;
+            project.Name = projestRequest.Name;
+            project.Description = projestRequest.Description;
+            project.UpdatedAt = DateTime.Now;
+            DbContext.Update(project);
+            DbContext.SaveChanges();
+            return project;
+        }
         internal int DeleteOne(int id)
         {
-            //var project = DbContext.Projects.Single(x => x.Id == id);
-            //DbContext.Remove(project);
+            var project = DbContext.Projects.Single(x => x.Id == id);
+            DbContext.Remove(project);
             int response = DbContext.SaveChanges();
             return response;
-        }
-
-        internal object GetOne()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal object PatchUpdate()
-        {
-            throw new NotImplementedException();
-        }
-
-        internal object PutUpdate()
-        {
-            throw new NotImplementedException();
         }
     }
 }
