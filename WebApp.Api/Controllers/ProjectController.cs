@@ -14,12 +14,15 @@ namespace WebApp.Api.Controllers
     public class ProjectController : ControllerBase
     {
         private IProjectRepository projectRepository;
+        private IActionRepository actionRepository;
         private ErrorResponse errorResponse;
         private ProjectResponse projectResponse;
         private ProjectsResponse projectsResponse;
-        public ProjectController(IProjectRepository _projectRepository)
+        private ActionResponse actionResponse;
+        public ProjectController(IProjectRepository _projectRepository, IActionRepository _actionRepository)
         {
             projectRepository = _projectRepository;
+            actionRepository = _actionRepository;
         }
 
         [HttpGet("{id}", Name = "GetOne")]
@@ -163,7 +166,6 @@ namespace WebApp.Api.Controllers
             }
         }
 
-        // PUT: api/Project/5
         [HttpPut("{id}")]
         public ActionResult Put(int id, [FromBody] ProjestRequest projestRequest)
         {
@@ -315,5 +317,52 @@ namespace WebApp.Api.Controllers
                 return StatusCode(errorResponse.Status, errorResponse);
             }
         }
+
+        #region Action
+        [HttpPost("{id}")]
+        public ActionResult<ActionResponse> CreateAction(int id, [FromBody] ActionRequest actionRequest)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    ActionResponseData responseData = actionRepository.CreateAction(id, actionRequest);
+                    if (responseData == null)
+                    {
+                        errorResponse = new ErrorResponse
+                        {
+                            Status = 400,
+                            Message = ModelState.ValidationState.ToString()
+                        };
+                        return BadRequest(errorResponse);
+                    }
+                    actionResponse = new ActionResponse
+                    {
+                        Status = 201,
+                        Message = "Created Successfully",
+                        ResponseData = responseData
+                    };
+                    return Created("", actionResponse);
+                }
+                errorResponse = new ErrorResponse
+                {
+                    Status = 400,
+                    Message = ModelState.ValidationState.ToString()
+                };
+                return BadRequest(errorResponse);
+            }
+            catch (Exception ex)
+            {
+                string error = (ex.InnerException != null) ? ex.InnerException.Message : ex.Message;
+                    errorResponse = new ErrorResponse
+                    {
+                        Status = 500,
+                        Message = error
+                    };
+                return StatusCode(errorResponse.Status, errorResponse);
+            }
+        }
+
+        #endregion
     }
 }

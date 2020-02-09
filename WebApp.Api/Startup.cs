@@ -38,9 +38,11 @@ namespace WebApp.Api
             });
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
+            services.AddScoped<IActionRepository, ActionRepository>();
 
             services.AddScoped<UserEntity>();
             services.AddScoped<ProjectEntity>();
+            services.AddScoped<ActionEntity>();
             services.AddSwaggerGen(setupAction =>
             {
                 setupAction.SwaggerDoc("WebApi",
