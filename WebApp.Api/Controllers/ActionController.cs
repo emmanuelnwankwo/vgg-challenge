@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,23 +28,34 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (actionRepository.AccessAuthentication(token))
                 {
-                    ActionResponseData responseData = actionRepository.GetOneAction(actionId);
-                    actionResponse = new ActionResponse
+                    if (ModelState.IsValid)
                     {
-                        Status = 200,
-                        Message = "Success",
-                        ResponseData = responseData
+                        ActionResponseData responseData = actionRepository.GetOneAction(actionId);
+                        actionResponse = new ActionResponse
+                        {
+                            Status = 200,
+                            Message = "Success",
+                            ResponseData = responseData
+                        };
+                        return Ok(actionResponse);
+                    }
+                    errorResponse = new ErrorResponse
+                    {
+                        Status = 400,
+                        Message = ModelState.ValidationState.ToString()
                     };
-                    return Ok(actionResponse);
+                    return BadRequest(errorResponse);
                 }
                 errorResponse = new ErrorResponse
                 {
-                    Status = 400,
-                    Message = ModelState.ValidationState.ToString()
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return BadRequest(errorResponse);
+                return StatusCode(401, errorResponse);
+
             }
             catch (Exception ex)
             {
@@ -75,14 +87,24 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                List<ActionResponseData> responseData = actionRepository.GetAllActions();
-                actionsResponse = new ActionsResponse
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (actionRepository.AccessAuthentication(token))
                 {
-                    Status = 200,
-                    Message = "Success",
-                    ResponseData = responseData
+                    List<ActionResponseData> responseData = actionRepository.GetAllActions();
+                    actionsResponse = new ActionsResponse
+                    {
+                        Status = 200,
+                        Message = "Success",
+                        ResponseData = responseData
+                    };
+                    return Ok(actionsResponse); 
+                }
+                errorResponse = new ErrorResponse
+                {
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return Ok(actionsResponse);
+                return StatusCode(401, errorResponse);
             }
             catch (Exception ex)
             {

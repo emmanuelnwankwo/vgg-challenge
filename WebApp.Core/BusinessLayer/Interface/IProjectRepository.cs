@@ -11,5 +11,6 @@ namespace WebApp.Core.BusinessLayer.Interface
         bool DeleteProject(int id);
         ProjectResponseData UpdateCompleted(int id, ProjestPatchRequest projestPatchRequest);
         ProjectResponseData UpdateAll(int id, ProjestRequest projestRequest);
+        bool AccessAuthentication(string token);
     }
 }

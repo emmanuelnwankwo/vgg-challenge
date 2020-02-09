@@ -17,6 +17,7 @@ namespace WebApp.Core.BusinessLayer.Repository
         {
             try
             {
+                var token = Guid.NewGuid();
                 int result = userEntity.Create(userRequest);
                 if (result != 0)
                 {
@@ -24,8 +25,9 @@ namespace WebApp.Core.BusinessLayer.Repository
                     {
                         Id = result,
                         Username = userRequest.Username,
-                        Token = "Token"
+                        Token = $"{token}"
                     };
+                    userEntity.PersistToken(token, responseData.Username);
                     return responseData;
                 }
                 return responseData = null;
@@ -40,7 +42,30 @@ namespace WebApp.Core.BusinessLayer.Repository
         {
             try
             {
+                var token = Guid.NewGuid();
                 var data = userEntity.GetOne(id);
+                responseData = new UserResponseData
+                {
+                    Id = data.Id,
+                    Username = data.Username,
+                    Token = $"{token}",
+                    CreatedAt = data.CreatedAt,
+                    UpdatedAt = data.UpdatedAt
+                };
+                userEntity.PersistToken(token, responseData.Username);
+                return responseData;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public UserResponseData Auth(UserRequest userRequest)
+        {
+            try
+            {
+                var data = userEntity.FindUser(userRequest);
                 responseData = new UserResponseData
                 {
                     Id = data.Id,

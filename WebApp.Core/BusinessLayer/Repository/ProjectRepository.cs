@@ -10,10 +10,12 @@ namespace WebApp.Core.BusinessLayer.Repository
     public class ProjectRepository : IProjectRepository
     {
         private ProjectEntity projectEntity;
+        private AuthEntity authEntity;
         private ProjectResponseData projectResponse;
-        public ProjectRepository(ProjectEntity _projectEntity)
+        public ProjectRepository(ProjectEntity _projectEntity, AuthEntity _authEntity)
         {
             projectEntity = _projectEntity;
+            authEntity = _authEntity;
         }
 
         public ProjectResponseData CreateProject(ProjestRequest projestRequest)
@@ -148,6 +150,23 @@ namespace WebApp.Core.BusinessLayer.Repository
             catch (Exception)
             {
                 throw;
+            }
+        }
+
+        public bool AccessAuthentication(string token)
+        {
+            try
+            {
+                bool isValid = authEntity.AccessAuthentication(token);
+                if (isValid)
+                {
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
             }
         }
     }

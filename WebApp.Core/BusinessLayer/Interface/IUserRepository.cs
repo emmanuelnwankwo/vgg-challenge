@@ -6,5 +6,6 @@ namespace WebApp.Core.BusinessLayer.Interface
     {
         UserResponseData CreateUser(UserRequest userRequest);
         UserResponseData GetOneUser(int id);
+        UserResponseData Auth(UserRequest userRequest);
     }
 }

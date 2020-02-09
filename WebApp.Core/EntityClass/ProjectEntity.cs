@@ -75,5 +75,6 @@ namespace WebApp.Core.EntityClass
             int response = DbContext.SaveChanges();
             return response;
         }
+
     }
 }

@@ -12,5 +12,6 @@ namespace WebApp.Core.BusinessLayer.Interface
         ActionResponseData GetOneAction(int id);
         ActionResponseData GetActionInProject(int projectId, int actionId);
         ActionResponseData GetActionInProject(int projectId, int actionId, ActionRequest actionRequest);
+        bool AccessAuthentication(string token);
     }
 }

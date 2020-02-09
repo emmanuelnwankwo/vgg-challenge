@@ -31,23 +31,33 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (projectRepository.AccessAuthentication(token))
                 {
-                    ProjectResponseData responseData = projectRepository.GetOneProject(projectId);
-                    projectResponse = new ProjectResponse
+                    if (ModelState.IsValid)
                     {
-                        Status = 200,
-                        Message = "Success",
-                        ResponseData = responseData
+                        ProjectResponseData responseData = projectRepository.GetOneProject(projectId);
+                        projectResponse = new ProjectResponse
+                        {
+                            Status = 200,
+                            Message = "Success",
+                            ResponseData = responseData
+                        };
+                        return Ok(projectResponse);
+                    }
+                    errorResponse = new ErrorResponse
+                    {
+                        Status = 400,
+                        Message = ModelState.ValidationState.ToString()
                     };
-                    return Ok(projectResponse);
+                    return BadRequest(errorResponse); 
                 }
                 errorResponse = new ErrorResponse
                 {
-                    Status = 400,
-                    Message = ModelState.ValidationState.ToString()
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return BadRequest(errorResponse);
+                return StatusCode(401, errorResponse);
             }
             catch (Exception ex)
             {
@@ -78,14 +88,24 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                List<ProjectResponseData> responseData = projectRepository.GetAllProjects();
-                projectsResponse = new ProjectsResponse
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (projectRepository.AccessAuthentication(token))
                 {
-                    Status = 200,
-                    Message = "Success",
-                    ResponseData = responseData
+                    List<ProjectResponseData> responseData = projectRepository.GetAllProjects();
+                    projectsResponse = new ProjectsResponse
+                    {
+                        Status = 200,
+                        Message = "Success",
+                        ResponseData = responseData
+                    };
+                    return Ok(projectsResponse); 
+                }
+                errorResponse = new ErrorResponse
+                {
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return Ok(projectsResponse);
+                return StatusCode(401, errorResponse);
             }
             catch (Exception ex)
             {
@@ -116,32 +136,42 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (projectRepository.AccessAuthentication(token))
                 {
-                    ProjectResponseData responseData = projectRepository.CreateProject(projestRequest);
-                    if (responseData == null)
+                    if (ModelState.IsValid)
                     {
-                        errorResponse = new ErrorResponse
+                        ProjectResponseData responseData = projectRepository.CreateProject(projestRequest);
+                        if (responseData == null)
                         {
-                            Status = 400,
-                            Message = ModelState.ValidationState.ToString()
+                            errorResponse = new ErrorResponse
+                            {
+                                Status = 400,
+                                Message = ModelState.ValidationState.ToString()
+                            };
+                            return BadRequest(errorResponse);
+                        }
+                        projectResponse = new ProjectResponse
+                        {
+                            Status = 201,
+                            Message = "Created Successfully",
+                            ResponseData = responseData
                         };
-                        return BadRequest(errorResponse);
+                        return Created("", projectResponse); 
                     }
-                    projectResponse = new ProjectResponse
+                    errorResponse = new ErrorResponse
                     {
-                        Status = 201,
-                        Message = "Created Successfully",
-                        ResponseData = responseData
+                        Status = 400,
+                        Message = ModelState.ValidationState.ToString()
                     };
-                    return Created("", projectResponse);
+                    return BadRequest(errorResponse);
                 }
                 errorResponse = new ErrorResponse
                 {
-                    Status = 400,
-                    Message = ModelState.ValidationState.ToString()
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return BadRequest(errorResponse);
+                return StatusCode(401, errorResponse);
             }
             catch (Exception ex)
             {
@@ -171,23 +201,33 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (projectRepository.AccessAuthentication(token))
                 {
-                    ProjectResponseData responseData = projectRepository.UpdateAll(projectId, projestRequest);
+                    if (ModelState.IsValid)
+                    {
+                        ProjectResponseData responseData = projectRepository.UpdateAll(projectId, projestRequest);
+                        projectResponse = new ProjectResponse
+                        {
+                            Status = 200,
+                            Message = "Success",
+                            ResponseData = responseData
+                        };
+                        return Ok(projectResponse);
+                    }
                     projectResponse = new ProjectResponse
                     {
-                        Status = 200,
-                        Message = "Success",
-                        ResponseData = responseData
+                        Status = 400,
+                        Message = ModelState.ValidationState.ToString()
                     };
-                    return Ok(projectResponse);
+                    return BadRequest(projectResponse); 
                 }
-                projectResponse = new ProjectResponse
+                errorResponse = new ErrorResponse
                 {
-                    Status = 400,
-                    Message = ModelState.ValidationState.ToString()
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return BadRequest(projectResponse);
+                return StatusCode(401, errorResponse);
             }
             catch (Exception ex)
             {
@@ -226,23 +266,33 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (projectRepository.AccessAuthentication(token))
                 {
-                    ProjectResponseData responseData = projectRepository.UpdateCompleted(projectId, projestPatchRequest);
+                    if (ModelState.IsValid)
+                    {
+                        ProjectResponseData responseData = projectRepository.UpdateCompleted(projectId, projestPatchRequest);
+                        projectResponse = new ProjectResponse
+                        {
+                            Status = 200,
+                            Message = "Success",
+                            ResponseData = responseData
+                        };
+                        return Ok(projectResponse);
+                    }
                     projectResponse = new ProjectResponse
                     {
-                        Status = 200,
-                        Message = "Success",
-                        ResponseData = responseData
+                        Status = 400,
+                        Message = ModelState.ValidationState.ToString()
                     };
-                    return Ok(projectResponse);
+                    return BadRequest(projectResponse); 
                 }
-                projectResponse = new ProjectResponse
+                errorResponse = new ErrorResponse
                 {
-                    Status = 400,
-                    Message = ModelState.ValidationState.ToString()
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return BadRequest(projectResponse);
+                return StatusCode(401, errorResponse);
             }
             catch (Exception ex)
             {
@@ -274,25 +324,35 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (projectRepository.AccessAuthentication(token))
                 {
-                    bool isDeleted = projectRepository.DeleteProject(projectId);
-                    if (isDeleted)
+                    if (ModelState.IsValid)
                     {
-                        projectResponse = new ProjectResponse
+                        bool isDeleted = projectRepository.DeleteProject(projectId);
+                        if (isDeleted)
                         {
-                            Status = 200,
-                            Message = "Success",
-                        };
-                        return Ok(projectResponse);
+                            projectResponse = new ProjectResponse
+                            {
+                                Status = 200,
+                                Message = "Success",
+                            };
+                            return Ok(projectResponse);
+                        }
                     }
+                    projectResponse = new ProjectResponse
+                    {
+                        Status = 400,
+                        Message = ModelState.ValidationState.ToString()
+                    };
+                    return BadRequest(projectResponse); 
                 }
-                projectResponse = new ProjectResponse
+                errorResponse = new ErrorResponse
                 {
-                    Status = 400,
-                    Message = ModelState.ValidationState.ToString()
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return BadRequest(projectResponse);
+                return StatusCode(401, errorResponse);
             }
             catch (Exception ex)
             {
@@ -324,32 +384,42 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (projectRepository.AccessAuthentication(token))
                 {
-                    ActionResponseData responseData = actionRepository.CreateAction(projectId, actionRequest);
-                    if (responseData == null)
+                    if (ModelState.IsValid)
                     {
-                        errorResponse = new ErrorResponse
+                        ActionResponseData responseData = actionRepository.CreateAction(projectId, actionRequest);
+                        if (responseData == null)
                         {
-                            Status = 400,
-                            Message = ModelState.ValidationState.ToString()
+                            errorResponse = new ErrorResponse
+                            {
+                                Status = 400,
+                                Message = ModelState.ValidationState.ToString()
+                            };
+                            return BadRequest(errorResponse);
+                        }
+                        actionResponse = new ActionResponse
+                        {
+                            Status = 201,
+                            Message = "Created Successfully",
+                            ResponseData = responseData
                         };
-                        return BadRequest(errorResponse);
+                        return Created("", actionResponse);
                     }
-                    actionResponse = new ActionResponse
+                    errorResponse = new ErrorResponse
                     {
-                        Status = 201,
-                        Message = "Created Successfully",
-                        ResponseData = responseData
+                        Status = 400,
+                        Message = ModelState.ValidationState.ToString()
                     };
-                    return Created("", actionResponse);
+                    return BadRequest(errorResponse);
                 }
                 errorResponse = new ErrorResponse
                 {
-                    Status = 400,
-                    Message = ModelState.ValidationState.ToString()
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return BadRequest(errorResponse);
+                return StatusCode(401, errorResponse);
             }
             catch (Exception ex)
             {
@@ -379,23 +449,33 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (projectRepository.AccessAuthentication(token))
                 {
-                    List<ActionResponseData> responseData = actionRepository.GetAllActionsInProject(projectId);
-                    actionsResponse = new ActionsResponse
+                    if (ModelState.IsValid)
                     {
-                        Status = 200,
-                        Message = "Success",
-                        ResponseData = responseData
+                        List<ActionResponseData> responseData = actionRepository.GetAllActionsInProject(projectId);
+                        actionsResponse = new ActionsResponse
+                        {
+                            Status = 200,
+                            Message = "Success",
+                            ResponseData = responseData
+                        };
+                        return Ok(actionsResponse);
+                    }
+                    errorResponse = new ErrorResponse
+                    {
+                        Status = 400,
+                        Message = ModelState.ValidationState.ToString()
                     };
-                    return Ok(actionsResponse);
+                    return BadRequest(errorResponse); 
                 }
                 errorResponse = new ErrorResponse
                 {
-                    Status = 400,
-                    Message = ModelState.ValidationState.ToString()
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return BadRequest(errorResponse);
+                return StatusCode(401, errorResponse);
             }
             catch (Exception ex)
             {
@@ -427,23 +507,33 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (projectRepository.AccessAuthentication(token))
                 {
-                    ActionResponseData responseData = actionRepository.GetActionInProject(projectId, actionId);
-                    actionResponse = new ActionResponse
+                    if (ModelState.IsValid)
                     {
-                        Status = 200,
-                        Message = "Success",
-                        ResponseData = responseData
+                        ActionResponseData responseData = actionRepository.GetActionInProject(projectId, actionId);
+                        actionResponse = new ActionResponse
+                        {
+                            Status = 200,
+                            Message = "Success",
+                            ResponseData = responseData
+                        };
+                        return Ok(actionResponse);
+                    }
+                    errorResponse = new ErrorResponse
+                    {
+                        Status = 400,
+                        Message = ModelState.ValidationState.ToString()
                     };
-                    return Ok(actionResponse);
+                    return BadRequest(errorResponse); 
                 }
                 errorResponse = new ErrorResponse
                 {
-                    Status = 400,
-                    Message = ModelState.ValidationState.ToString()
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return BadRequest(errorResponse);
+                return StatusCode(401, errorResponse);
             }
             catch (Exception ex)
             {
@@ -482,23 +572,33 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (projectRepository.AccessAuthentication(token))
                 {
-                    ActionResponseData responseData = actionRepository.GetActionInProject(projectId, actionId, actionRequest);
-                    actionResponse = new ActionResponse
+                    if (ModelState.IsValid)
                     {
-                        Status = 200,
-                        Message = "Success",
-                        ResponseData = responseData
+                        ActionResponseData responseData = actionRepository.GetActionInProject(projectId, actionId, actionRequest);
+                        actionResponse = new ActionResponse
+                        {
+                            Status = 200,
+                            Message = "Success",
+                            ResponseData = responseData
+                        };
+                        return Ok(actionResponse);
+                    }
+                    errorResponse = new ErrorResponse
+                    {
+                        Status = 400,
+                        Message = ModelState.ValidationState.ToString()
                     };
-                    return Ok(actionResponse);
+                    return BadRequest(errorResponse); 
                 }
                 errorResponse = new ErrorResponse
                 {
-                    Status = 400,
-                    Message = ModelState.ValidationState.ToString()
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return BadRequest(errorResponse);
+                return StatusCode(401, errorResponse);
             }
             catch (Exception ex)
             {
@@ -537,25 +637,35 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
+                string token = this.Request.Headers["Authorization"].ToString();
+                if (projectRepository.AccessAuthentication(token))
                 {
-                    bool isDeleted = actionRepository.DeleteAction(projectId, actionId);
-                    if (isDeleted)
+                    if (ModelState.IsValid)
                     {
-                        actionResponse = new ActionResponse
+                        bool isDeleted = actionRepository.DeleteAction(projectId, actionId);
+                        if (isDeleted)
                         {
-                            Status = 200,
-                            Message = "Success"
-                        };
-                        return Ok(actionResponse);
+                            actionResponse = new ActionResponse
+                            {
+                                Status = 200,
+                                Message = "Success"
+                            };
+                            return Ok(actionResponse);
+                        }
                     }
+                    errorResponse = new ErrorResponse
+                    {
+                        Status = 400,
+                        Message = ModelState.ValidationState.ToString()
+                    };
+                    return BadRequest(errorResponse); 
                 }
                 errorResponse = new ErrorResponse
                 {
-                    Status = 400,
-                    Message = ModelState.ValidationState.ToString()
+                    Status = 401,
+                    Message = "Access denied, invalid token"
                 };
-                return BadRequest(errorResponse);
+                return StatusCode(401, errorResponse);
             }
             catch (Exception ex)
             {
