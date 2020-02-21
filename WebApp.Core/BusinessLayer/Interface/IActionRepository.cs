@@ -7,11 +7,10 @@ namespace WebApp.Core.BusinessLayer.Interface
     {
         ActionResponseData CreateAction(int id, ActionRequest actionRequest);
         bool DeleteAction(int projectId, int actionId);
-        List<ActionResponseData> GetAllActions();
-        List<ActionResponseData> GetAllActionsInProject(int id);
+        IEnumerable<ActionResponseData> GetAllActions();
+        IEnumerable<ActionResponseData> GetAllActionsInProject(int id);
         ActionResponseData GetOneAction(int id);
         ActionResponseData GetActionInProject(int projectId, int actionId);
         ActionResponseData GetActionInProject(int projectId, int actionId, ActionRequest actionRequest);
-        bool AccessAuthentication(string token);
     }
 }

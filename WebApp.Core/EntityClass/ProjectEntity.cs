@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using WebApp.Core.Dtos;
+using WebApp.Core.Utility;
 using WebApp.Data;
 using WebApp.Data.Models.Entities;
 
@@ -35,21 +36,23 @@ namespace WebApp.Core.EntityClass
             }
         }
 
-        internal List<Project> GetAll()
-        {
-            var projectList = DbContext.Projects.ToList();
-            return projectList;
-        }
-
         internal Project GetOne(int id)
         {
-            var project = DbContext.Projects.Single(x => x.Id == id);
+            var project = DbContext.Projects.Find(id);
+            if (project == null)
+            {
+                throw new Exception("Project not found");
+            }
             return project;
         }
 
         internal Project PatchUpdate(int id, ProjestPatchRequest projestPatchRequest)
         {
-            var project = DbContext.Projects.Single(x => x.Id == id);
+            var project = DbContext.Projects.Find(id);
+            if (project == null)
+            {
+                throw new Exception("Project not found");
+            }
             project.Completed = projestPatchRequest.Completed;
             project.UpdatedAt = DateTime.Now;
             DbContext.Update(project);
@@ -59,7 +62,11 @@ namespace WebApp.Core.EntityClass
 
         internal Project PutUpdate(int id, ProjestRequest projestRequest)
         {
-            var project = DbContext.Projects.Single(x => x.Id == id);
+            var project = DbContext.Projects.Find(id);
+            if (project == null)
+            {
+                throw new Exception("Project not found");
+            }
             project.Completed = projestRequest.Completed;
             project.Name = projestRequest.Name;
             project.Description = projestRequest.Description;
@@ -70,11 +77,30 @@ namespace WebApp.Core.EntityClass
         }
         internal int DeleteOne(int id)
         {
-            var project = DbContext.Projects.Single(x => x.Id == id);
+            var project = DbContext.Projects.Find(id);
+            if (project == null)
+            {
+                throw new Exception("Project not found");
+            }
             DbContext.Remove(project);
             int response = DbContext.SaveChanges();
             return response;
         }
 
+        internal PagedList<Project> GetAll(ProjectResourceParameters projectResourceParameters)
+        {
+            var collectionBeforePaging = DbContext.Projects
+                    .OrderBy(x => x.Name).AsQueryable();
+            if (!string.IsNullOrEmpty(projectResourceParameters.Search))
+            {
+                var searchQuery = projectResourceParameters.Search.Trim().ToLowerInvariant();
+                collectionBeforePaging = collectionBeforePaging
+                    .Where(x => x.Name.Contains(searchQuery)
+                    || x.Description.Contains(searchQuery));
+            }
+            return PagedList<Project>.Create(collectionBeforePaging,
+                projectResourceParameters.Offset, projectResourceParameters.Limit);
+
+        }
     }
 }

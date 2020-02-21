@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using WebApp.Core.BusinessLayer.Interface;
 using WebApp.Core.Dtos;
 using WebApp.Core.EntityClass;
+using WebApp.Core.Utility;
+using WebApp.Data.Models.Entities;
 
 namespace WebApp.Core.BusinessLayer.Repository
 {
     public class ProjectRepository : IProjectRepository
     {
-        private ProjectEntity projectEntity;
-        private AuthEntity authEntity;
+        private readonly ProjectEntity projectEntity;
         private ProjectResponseData projectResponse;
-        public ProjectRepository(ProjectEntity _projectEntity, AuthEntity _authEntity)
+        public ProjectRepository(ProjectEntity _projectEntity)
         {
             projectEntity = _projectEntity;
-            authEntity = _authEntity;
         }
 
         public ProjectResponseData CreateProject(ProjestRequest projestRequest)
@@ -36,33 +35,6 @@ namespace WebApp.Core.BusinessLayer.Repository
                     return projectResponse;
                 }
                 return projectResponse = null;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public List<ProjectResponseData> GetAllProjects()
-        {
-            try
-            {
-                var response = projectEntity.GetAll();
-                List<ProjectResponseData> list = new List<ProjectResponseData>();
-                foreach (var data in response)
-                {
-                    projectResponse = new ProjectResponseData
-                    {
-                        Id = data.Id,
-                        Name = data.Name,
-                        Description = data.Description,
-                        Completed = data.Completed,
-                        CreatedAt = data.CreatedAt,
-                        UpdatedAt = data.UpdatedAt
-                    };
-                    list.Add(projectResponse);
-                }
-                return list;
             }
             catch (Exception)
             {
@@ -152,22 +124,18 @@ namespace WebApp.Core.BusinessLayer.Repository
                 throw;
             }
         }
-
-        public bool AccessAuthentication(string token)
+        
+        public PagedList<Project> GetAllProjects(ProjectResourceParameters projectResourceParameters)
         {
             try
             {
-                bool isValid = authEntity.AccessAuthentication(token);
-                if (isValid)
-                {
-                    return true;
-                }
-                return false;
+                return projectEntity.GetAll(projectResourceParameters);
             }
             catch (Exception)
             {
-                return false;
+                throw;
             }
         }
+
     }
 }

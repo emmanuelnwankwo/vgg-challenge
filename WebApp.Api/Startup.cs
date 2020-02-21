@@ -18,6 +18,18 @@ using WebApp.Core.EntityClass;
 using WebApp.Data;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using AutoMapper;
+using WebApp.Core.Dtos;
+using WebApp.Core.Utility;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Http;
+using System.Net;
+using Microsoft.AspNetCore.Diagnostics;
+using Newtonsoft.Json;
 
 namespace WebApp.Api
 {
@@ -33,10 +45,39 @@ namespace WebApp.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
             services.AddControllers();
+            var appSettingsSection = Configuration.GetSection("AppSettings");
+            services.Configure<AppSettings>(appSettingsSection);
+
+            // configure jwt authentication
+            var appSettings = appSettingsSection.Get<AppSettings>();
+            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            services.AddAuthentication(x =>
+            {
+                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                x.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    RequireExpirationTime = false,
+                    ValidateLifetime = true
+                };
+            });
+
             services.AddDbContext<ApiDbContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("WebApiDB"));
+                options.UseNpgsql(Configuration.GetConnectionString("WebApiDB"));
             });
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
@@ -45,11 +86,17 @@ namespace WebApp.Api
             services.AddScoped<UserEntity>();
             services.AddScoped<ProjectEntity>();
             services.AddScoped<ActionEntity>();
-            services.AddScoped<AuthEntity>();
+            services.AddAutoMapper(c => c.AddProfile<AutoMapping>(), typeof(Startup));
+            services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+            services.AddScoped<IUrlHelper, UrlHelper>(implementationFactory =>
+            {
+                var actionContext = implementationFactory.GetService<IActionContextAccessor>().ActionContext;
+                return new UrlHelper(actionContext);
+            });
             services.AddSwaggerGen(setupAction =>
             {
                 setupAction.SwaggerDoc("WebApi",
-                    new Microsoft.OpenApi.Models.OpenApiInfo()
+                    new OpenApiInfo()
                     {
                         Title = "Web Api",
                         Version = "v1"
@@ -81,10 +128,6 @@ namespace WebApp.Api
                         new List<string>()
                       }
                     });
-                //setupAction.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
-                //    { "Bearer", Enumerable.Empty<string>() }
-                //});
-                //setupAction.AddSecurityDefinition("Basic", new BasicAuthScheme { Description = "Basic authentication" });
             });
         }
 
@@ -95,7 +138,6 @@ namespace WebApp.Api
             {
                 app.UseDeveloperExceptionPage();
             }
-
             app.UseHttpsRedirection();
             app.UseSwagger(c =>
             {
@@ -108,10 +150,37 @@ namespace WebApp.Api
                 c.RoutePrefix = "";
                 c.SwaggerEndpoint("/WebApi/swagger.json", "");
             });
-
             app.UseRouting();
+            // global cors policy
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
 
+            app.UseAuthentication();
             app.UseAuthorization();
+            //app.Use(async (context, next) =>
+            //{
+            //    await next();
+            //    if (context.Response.StatusCode == 401)
+            //    {
+            //        context.Response.ContentType = "application/json";
+            //        await context.Response.WriteAsync("eeeeeeeee");
+            //    }
+            //});
+            //app.UseStatusCodePages(async context =>
+            //{
+            //    if (context.HttpContext.Response.StatusCode.Equals(401))
+            //    {
+            //        //ErrorResponse errorResponse = new ErrorResponse
+            //        //{
+            //        //    Status = 401,
+            //        //    Message = "Access denied, invalid token"
+            //        //};
+            //        await context.HttpContext.Response.WriteAsync("Unauthorized request");
+            //        //return errorResponse;
+            //    }
+            //});
 
             app.UseEndpoints(endpoints =>
             {
