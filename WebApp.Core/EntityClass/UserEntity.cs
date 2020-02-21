@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using WebApp.Core.Dtos;
+using WebApp.Core.Utility;
 using WebApp.Data;
 using WebApp.Data.Models.Entities;
 
@@ -19,7 +20,7 @@ namespace WebApp.Core.EntityClass
         {
             try
             {
-                var hashedPassword = userRequest.Password;
+                var hashedPassword = Helper.HashPassword(userRequest.Password);
                 User newUser = new User
                 {
                     Username = userRequest.Username,
@@ -37,32 +38,18 @@ namespace WebApp.Core.EntityClass
         }
         internal User GetOne(int id)
         {
-            var user = DbContext.Users.Single(x => x.Id == id);
+            var user = DbContext.Users.Find(id);
+            if (user == null)
+            {
+                throw new Exception("User not found");
+            }
             return user;
         }
 
         internal User FindUser(UserRequest userRequest)
         {
-            var user = DbContext.Users.Single(x => x.Username == userRequest.Username && x.Password == userRequest.Password);
+            var user = DbContext.Users.FirstOrDefault(x => x.Username == userRequest.Username);
             return user;
-        }
-
-        internal void PersistToken(Guid token, string username)
-        {
-            try
-            {
-                SessionRecord session = new SessionRecord
-                {
-                    Username = username,
-                    Token = token
-                };
-                DbContext.SessionRecords.Add(session);
-                DbContext.SaveChanges();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
         }
     }
 }

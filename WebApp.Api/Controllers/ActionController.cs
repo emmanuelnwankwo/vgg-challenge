@@ -1,20 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Http.Controllers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using WebApp.Core.BusinessLayer.Interface;
 using WebApp.Core.Dtos;
 
 namespace WebApp.Api.Controllers
 {
     [Route("api/action")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    //[CustomAuthorization]
     [ApiController]
     public class ActionController : ControllerBase
     {
-        private IActionRepository actionRepository;
+        private readonly IActionRepository actionRepository;
         private ErrorResponse errorResponse;
         private ActionResponse actionResponse;
         private ActionsResponse actionsResponse;
@@ -28,45 +36,34 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                string token = this.Request.Headers["Authorization"].ToString();
-                if (actionRepository.AccessAuthentication(token))
+                if (ModelState.IsValid)
                 {
-                    if (ModelState.IsValid)
+                    ActionResponseData responseData = actionRepository.GetOneAction(actionId);
+                    actionResponse = new ActionResponse
                     {
-                        ActionResponseData responseData = actionRepository.GetOneAction(actionId);
-                        actionResponse = new ActionResponse
-                        {
-                            Status = 200,
-                            Message = "Success",
-                            ResponseData = responseData
-                        };
-                        return Ok(actionResponse);
-                    }
-                    errorResponse = new ErrorResponse
-                    {
-                        Status = 400,
-                        Message = ModelState.ValidationState.ToString()
+                        Status = 200,
+                        Message = "Success",
+                        ResponseData = responseData
                     };
-                    return BadRequest(errorResponse);
+                    return Ok(actionResponse);
                 }
                 errorResponse = new ErrorResponse
                 {
-                    Status = 401,
-                    Message = "Access denied, invalid token"
+                    Status = 400,
+                    Message = ModelState.ValidationState.ToString()
                 };
-                return StatusCode(401, errorResponse);
-
+                return BadRequest(errorResponse);
             }
             catch (Exception ex)
             {
 
                 string error = (ex.InnerException != null) ? ex.InnerException.Message : ex.Message;
-                if (error.Contains("Sequence contains no elements"))
+                if (error.Contains("Action not found"))
                 {
                     errorResponse = new ErrorResponse
                     {
                         Status = 404,
-                        Message = "Action not found"
+                        Message = error
                     };
                 }
                 else
@@ -87,24 +84,14 @@ namespace WebApp.Api.Controllers
         {
             try
             {
-                string token = this.Request.Headers["Authorization"].ToString();
-                if (actionRepository.AccessAuthentication(token))
+                IEnumerable<ActionResponseData> responseData = actionRepository.GetAllActions();
+                actionsResponse = new ActionsResponse
                 {
-                    List<ActionResponseData> responseData = actionRepository.GetAllActions();
-                    actionsResponse = new ActionsResponse
-                    {
-                        Status = 200,
-                        Message = "Success",
-                        ResponseData = responseData
-                    };
-                    return Ok(actionsResponse); 
-                }
-                errorResponse = new ErrorResponse
-                {
-                    Status = 401,
-                    Message = "Access denied, invalid token"
+                    Status = 200,
+                    Message = "Success",
+                    ResponseData = responseData
                 };
-                return StatusCode(401, errorResponse);
+                return Ok(actionsResponse);
             }
             catch (Exception ex)
             {
@@ -131,4 +118,31 @@ namespace WebApp.Api.Controllers
         }
 
     }
+
+    //[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
+    //public class CustomAuthorization : AuthorizeAttribute
+    //{
+    //    protected  void HandleUnauthorizedRequest(HttpActionContext actionContext)
+    //    {
+    //        actionContext.Response = new HttpResponseMessage
+    //        {
+    //            StatusCode = HttpStatusCode.Forbidden,
+    //            Content = new StringContent("You are unauthorized to access this resource")
+    //        };
+    //    }
+    //}
+
+    //[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = true)]
+    //public class CustomAuthorization : Attribute, IAsyncActionFilter
+    //{
+    //    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    //    {
+    //        if (context.HttpContext.Response.StatusCode.Equals(401))
+    //        {
+    //            await context.HttpContext.Response.WriteAsync("Unauthorized request");
+    //            return;
+    //        }
+    //        await next();
+    //    }
+    //}
 }

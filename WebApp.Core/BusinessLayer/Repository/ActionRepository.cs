@@ -9,13 +9,11 @@ namespace WebApp.Core.BusinessLayer.Interface
 {
     public class ActionRepository : IActionRepository
     {
-        private ActionEntity actionEntity;
-        private AuthEntity authEntity;
+        private readonly ActionEntity actionEntity;
         private ActionResponseData responseData;
-        public ActionRepository(ActionEntity _actionEntity, AuthEntity _authEntity)
+        public ActionRepository(ActionEntity _actionEntity)
         {
             actionEntity = _actionEntity;
-            authEntity = _authEntity;
         }
         public ActionResponseData CreateAction(int id, ActionRequest actionRequest)
         {
@@ -42,7 +40,7 @@ namespace WebApp.Core.BusinessLayer.Interface
             }
         }
 
-        public List<ActionResponseData> GetAllActions()
+        public IEnumerable<ActionResponseData> GetAllActions()
         {
             try
             {
@@ -108,7 +106,7 @@ namespace WebApp.Core.BusinessLayer.Interface
             }
         }
 
-        public List<ActionResponseData> GetAllActionsInProject(int id)
+        public IEnumerable<ActionResponseData> GetAllActionsInProject(int id)
         {
             try
             {
@@ -176,23 +174,6 @@ namespace WebApp.Core.BusinessLayer.Interface
             catch (Exception)
             {
                 throw;
-            }
-        }
-
-        public bool AccessAuthentication(string token)
-        {
-            try
-            {
-                bool isValid = authEntity.AccessAuthentication(token);
-                if (isValid)
-                {
-                    return true;
-                }
-                return false;
-            }
-            catch (Exception)
-            {
-                return false;
             }
         }
     }

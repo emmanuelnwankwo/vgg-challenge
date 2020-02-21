@@ -15,7 +15,7 @@ namespace WebApp.Core.Dtos
     {
         public int Status { get; set; }
         public string Message { get; set; }
-        public List<ActionResponseData> ResponseData { get; set; }
+        public IEnumerable<ActionResponseData> ResponseData { get; set; }
     }
     public class ActionResponseData
     {
