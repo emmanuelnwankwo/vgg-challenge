@@ -53,7 +53,7 @@ namespace WebApp.Api.Controllers
             catch (Exception ex)
             {
                 string error = (ex.InnerException != null) ? ex.InnerException.Message : ex.Message;
-                if (error.Contains("Cannot insert duplicate key row in object"))
+                if (error.Contains("duplicate"))
                 {
                     errorResponse = new ErrorResponse
                     {
