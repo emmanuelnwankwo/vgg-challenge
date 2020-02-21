@@ -1,22 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 using WebApp.Core.BusinessLayer.Interface;
 using WebApp.Core.BusinessLayer.Repository;
 using WebApp.Core.EntityClass;
 using WebApp.Data;
-using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -26,10 +20,6 @@ using WebApp.Core.Utility;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Http;
-using System.Net;
-using Microsoft.AspNetCore.Diagnostics;
-using Newtonsoft.Json;
 
 namespace WebApp.Api
 {
@@ -97,21 +87,6 @@ namespace WebApp.Api
                     options.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL"));
                 });
             }
-            //services.AddEntityFrameworkNpgsql().AddDbContext<ApiDbContext>(options =>
-            //{
-            //    string connectionString;
-            //    if (env == "Development")
-            //    {
-            //        // Use connection string from file.
-            //        connectionString = Configuration.GetConnectionString("WebApiDB");
-            //    }
-            //    else
-            //    {
-            //        // Use connection string provided at runtime by Heroku.
-            //        connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
-            //    }
-            //    options.UseNpgsql(connectionString);
-            //});
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
             services.AddScoped<IActionRepository, ActionRepository>();
