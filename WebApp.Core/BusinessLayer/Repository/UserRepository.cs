@@ -22,7 +22,6 @@ namespace WebApp.Core.BusinessLayer.Repository
         {
             try
             {
-                var tokenc = Guid.NewGuid();
                 int result = userEntity.Create(userRequest);
                 string token = Helper.GenerateToken(result, userRequest.Username, appSettings.Secret);
                 if (result != 0)

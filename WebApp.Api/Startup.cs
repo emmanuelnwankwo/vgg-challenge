@@ -49,10 +49,19 @@ namespace WebApp.Api
             services.AddControllers();
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
-
-            // configure jwt authentication
             var appSettings = appSettingsSection.Get<AppSettings>();
-            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            // configure jwt authentication
+            byte[] key;
+            if (env == "Development")
+            {
+                key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            }
+            else
+            {
+                string secret =Environment.GetEnvironmentVariable("Secret");
+                key = Encoding.ASCII.GetBytes(secret);
+            }
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -74,11 +83,35 @@ namespace WebApp.Api
                     ValidateLifetime = true
                 };
             });
-
-            services.AddDbContext<ApiDbContext>(options =>
+            if (env == "Development")
             {
-                options.UseNpgsql(Configuration.GetConnectionString("WebApiDB"));
-            });
+                services.AddEntityFrameworkSqlServer().AddDbContext<ApiDbContext>(options =>
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("WebApiDB"));
+                });
+            }
+            else
+            {
+                services.AddEntityFrameworkNpgsql().AddDbContext<ApiDbContext>(options =>
+                {
+                    options.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL"));
+                });
+            }
+            //services.AddEntityFrameworkNpgsql().AddDbContext<ApiDbContext>(options =>
+            //{
+            //    string connectionString;
+            //    if (env == "Development")
+            //    {
+            //        // Use connection string from file.
+            //        connectionString = Configuration.GetConnectionString("WebApiDB");
+            //    }
+            //    else
+            //    {
+            //        // Use connection string provided at runtime by Heroku.
+            //        connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+            //    }
+            //    options.UseNpgsql(connectionString);
+            //});
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
             services.AddScoped<IActionRepository, ActionRepository>();
