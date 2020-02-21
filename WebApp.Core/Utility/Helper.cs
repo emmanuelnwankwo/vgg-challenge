@@ -41,6 +41,11 @@ namespace WebApp.Core.Utility
 
         public static string GenerateToken(int userId, string username, string secret)
         {
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (env != "Development")
+            {
+                secret = Environment.GetEnvironmentVariable("Secret");
+            }
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(secret);
             var tokenDescriptor = new SecurityTokenDescriptor

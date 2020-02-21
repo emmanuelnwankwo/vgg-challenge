@@ -1,22 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Design;
 using WebApp.Core.BusinessLayer.Interface;
 using WebApp.Core.BusinessLayer.Repository;
 using WebApp.Core.EntityClass;
 using WebApp.Data;
-using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -26,10 +20,6 @@ using WebApp.Core.Utility;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Http;
-using System.Net;
-using Microsoft.AspNetCore.Diagnostics;
-using Newtonsoft.Json;
 
 namespace WebApp.Api
 {
@@ -49,10 +39,19 @@ namespace WebApp.Api
             services.AddControllers();
             var appSettingsSection = Configuration.GetSection("AppSettings");
             services.Configure<AppSettings>(appSettingsSection);
-
-            // configure jwt authentication
             var appSettings = appSettingsSection.Get<AppSettings>();
-            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            // configure jwt authentication
+            byte[] key;
+            if (env == "Development")
+            {
+                key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            }
+            else
+            {
+                string secret =Environment.GetEnvironmentVariable("Secret");
+                key = Encoding.ASCII.GetBytes(secret);
+            }
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -74,11 +73,20 @@ namespace WebApp.Api
                     ValidateLifetime = true
                 };
             });
-
-            services.AddDbContext<ApiDbContext>(options =>
+            if (env == "Development")
             {
-                options.UseNpgsql(Configuration.GetConnectionString("WebApiDB"));
-            });
+                services.AddEntityFrameworkSqlServer().AddDbContext<ApiDbContext>(options =>
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("WebApiDB"));
+                });
+            }
+            else
+            {
+                services.AddEntityFrameworkNpgsql().AddDbContext<ApiDbContext>(options =>
+                {
+                    options.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL"));
+                });
+            }
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
             services.AddScoped<IActionRepository, ActionRepository>();
